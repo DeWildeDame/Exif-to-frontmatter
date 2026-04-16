@@ -9,9 +9,8 @@ export function* directoryWalk(dir: string): Generator<string> {
 	// Walk through directories
 	for (const entry of entries) {
 
-
 		const fullPath = path.join(dir, entry.name);
-		console.log(fullPath)
+
 		if (entry.isDirectory()) {
 			// Recursive.
 			yield* directoryWalk(fullPath);
