@@ -6,7 +6,7 @@ import { exifToFrontmatter } from './frontmatter.js';
 import { directoryWalk } from './helpers/directorywalker.js';
 
 
-async function processFile(file: string, outDir: string) {
+async function processFile(file: string, inputRoot: string, outDir: string) {
 	// Read exif
 	const exif = await readExif(file);
 	// Title from filename
@@ -22,8 +22,15 @@ async function processFile(file: string, outDir: string) {
 	// Create MDX.
 	const mdx = `---\n${yaml.trim()}\n---\n\n`;
 
+	// Create target directory
+	const rel = path.relative(inputRoot, file);
+	const relDir = path.dirname(rel);
+
+	const targetDir = path.join(outDir, relDir);
+	fs.mkdirSync(targetDir, { recursive: true });
+
 	// Create the files!
-	const outPath = path.join(outDir, `${slug}.mdx`);
+	const outPath = path.join(targetDir, `${slug}.mdx`);
 	fs.writeFileSync(outPath, mdx, 'utf8');
 	// We should get some monoring in place at some point. 
 	console.log(`Created: ${outPath}`);
@@ -32,36 +39,39 @@ async function processFile(file: string, outDir: string) {
 
 
 async function main() {
+	// Process input
+	let input = process.argv[2];
 
-	const input = process.argv[2];
-	if (!input) {
-		// No file.
-		console.error('Usage: exif2fm <file-or-directory>');
-		process.exit(1);
-	}
+	// Capture input path
+	const inputRoot = input ? path.resolve(input) : 'input';
 
 	try {
-		// If output does not exist, create it. 
+
+		// Always remove output.
 		const outDir = path.join(process.cwd(), 'output');
-		if (!fs.existsSync(outDir)) {
-			fs.mkdirSync(outDir);
+		if (fs.existsSync(outDir)) {
+			fs.rmSync(outDir, { recursive: true, force: true });
 		}
+		fs.mkdirSync(outDir, { recursive: true });
+
 
 		// What kind of input are we handling.
 		const stat = fs.statSync(input);
 
 		// Directory logic.
 		if (stat.isDirectory()) {
-			// Let's do some recursion! 
+
+			// Let's do some recursion!
 			for (const file of directoryWalk(input)) {
+
 				// Only process img files. 
 				if (/\.(jpg|jpeg|png|tif|tiff|dng)$/i.test(file)) {
-					await processFile(file, outDir);
+					await processFile(file, inputRoot, outDir);
 				}
 			}
 		} else {
 			// Process file.
-			await processFile(input, outDir);
+			await processFile(input, inputRoot, outDir);
 		}
 
 	} catch (err) {
