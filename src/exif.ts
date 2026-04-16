@@ -18,9 +18,13 @@ export interface ExifData {
 
 export async function readExif(path: string): Promise<ExifData> {
 
-	// store
-	const exif = await parse(path);
+	// get exif data.
+	const exif = await parse(path, {
 
+
+	});
+
+	// No data. 
 	if (!exif) throw new Error(`No EXIF data found in ${path}`);
 
 	return {
