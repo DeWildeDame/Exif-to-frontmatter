@@ -65,6 +65,8 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		flags.image = imagepaths.image;
 		flags.preview = imagepaths.preview;
 		flags.thumbnail = imagepaths.thumbnail;
+
+		flags.title = title;
 		// Process overrides.
 		processExif(exif, flags);
 
