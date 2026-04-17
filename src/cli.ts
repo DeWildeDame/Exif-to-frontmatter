@@ -6,6 +6,11 @@ import { exifToFrontmatter } from './frontmatter.js';
 import { directoryWalk } from './helpers/directorywalker.js';
 import parseArgs from './helpers/parseArgs.js';
 import processExif from './helpers/processExif.js';
+import processImages from './helpers/processImages.js';
+
+import { warn, error, success } from './cli/cliOutputParser.js';
+
+import { createSpinner } from './cli/spinner.js';
 
 // Create tracker for slug override
 let _slugCount = 0;
@@ -13,63 +18,116 @@ let _slugCount = 0;
 // The props keep growing and growing. 
 async function processFile(file: string, inputRoot: string, outDir: string, flags: Record<string, any>) {
 
-	// Read exif.
-	const exif = await readExif(file);
+	// Create a spinner class. 
+	const spinner = createSpinner(`Processing ${file}`);
 
-	// Process overrides.
-	processExif(exif, flags);
 
-	// Title from filename
-	const base = path.basename(file);
-	const title = base.replace(path.extname(base), '');
+	try {
+		// Read exif.
+		const exif = await readExif(file) as Record<string, any>;;
 
-	// Slug from title with respecting the overrides.
-	// This code is bad right now, move it to a new process to handle directory and slug handling.
-	let slug = flags.slug ? flags.slug + ++_slugCount : title.replace(/\s+/g, '-');
+		if (!exif || Object.keys(exif).length === 0) {
+			spinner.stop(false);
+			warn(`No EXIF data found in ${file}`);
+			return;
+		}
 
-	// Normalize.
-	slug = slug.toLowerCase();
+		// Title from filename
+		const base = path.basename(file);
+		const title = base.replace(path.extname(base), '');
 
-	// Build yaml, respect override from te flags.
-	const yaml = exifToFrontmatter(exif, { title: flags.title ? flags.title : title });
 
-	// Create MDX.
-	const mdx = `---\n${yaml.trim()}\n---\n\n`;
+		// Slug from title with respecting the overrides.
+		// This code is bad right now, move it to a new process to handle directory and slug handling.
+		let slug = flags.slug ? flags.slug + ++_slugCount : title.replace(/\s+/g, '-');
 
-	// Create target directory
-	const rel = path.relative(inputRoot, file);
-	const relDir = path.dirname(rel);
+		// Normalize.
+		slug = slug.toLowerCase();
 
-	const targetDir = path.join(outDir, relDir);
-	fs.mkdirSync(targetDir, { recursive: true });
+		// Set a new base for images
+		const publicBase = `/assets/img/photos/${path}/${slug}`;
+		const imagepaths = {
+			image: `${publicBase}.jpg`,
+			preview: `${publicBase}-preview.jpg`,
+			thumbnail: `${publicBase}-48x.jpg`
+		}
 
-	// Create the files!
-	const outPath = path.join(targetDir, `${slug}.mdx`);
-	fs.writeFileSync(outPath, mdx, 'utf8');
+		const rel = path.relative(inputRoot, file);
+		const relDir = path.dirname(rel);
 
-	// We should get some monotoring in place at some point. 
-	console.info(`Created: ${outPath}`);
+		// Split up up MDX files and images
+		const mdxRoot = path.join(outDir, "mdx");
+		const imgRoot = path.join(outDir, "img");
+
+		fs.mkdirSync(mdxRoot, { recursive: true });
+		fs.mkdirSync(imgRoot, { recursive: true });
+
+		flags.image = imagepaths.image;
+		flags.preview = imagepaths.preview;
+		flags.thumbnail = imagepaths.thumbnail;
+		// Process overrides.
+		processExif(exif, flags);
+
+		// Build yaml, respect override from te flags.
+		const yaml = exifToFrontmatter(exif, flags);
+
+		// Create MDX.
+		const mdx = `---\n${yaml.trim()}\n---\n\n`;
+
+		// Create target directory
+		const targetDirMdx = path.join(mdxRoot, relDir);
+		fs.mkdirSync(targetDirMdx, { recursive: true });
+
+		// Create the files!
+		const outPath = path.join(targetDirMdx, `${slug}.mdx`);
+		fs.writeFileSync(outPath, mdx, 'utf8');
+
+
+		const targetDirImg = path.join(imgRoot, relDir);
+		// Process images.
+		await processImages(file, targetDirImg, slug);
+
+		spinner.stop(true);
+
+		// We should get some monotoring in place at some point. 
+		success(`Created: ${outPath}`);
+	} catch (err: any) {
+		spinner.stop(false);
+		warn(` Failed to process ${file}: ${err.message || err}`)
+	}
 
 }
 
 
 async function main() {
+
 	// Process input
 	let input = process.argv[2];
+
+	// Capture input path and replace if needed
+	if (typeof input === 'undefined')
+		input = 'input';
+
+	const inputRoot = input;
 
 	// Capture arguments
 	const flags = parseArgs(process.argv.slice(3));
 
-	// Capture input path
-	const inputRoot = input ? path.resolve(input) : 'input';
+
 
 	try {
 
+
 		// Always remove output.
 		const outDir = path.join(process.cwd(), 'output');
+
+
+		// Remove if out put exists. 
 		if (fs.existsSync(outDir)) {
 			fs.rmSync(outDir, { recursive: true, force: true });
 		}
+
+		// Create new empty output folder
 		fs.mkdirSync(outDir, { recursive: true });
 
 
@@ -92,9 +150,9 @@ async function main() {
 			await processFile(input, inputRoot, outDir, flags);
 		}
 
-	} catch (err) {
+	} catch (err: any) {
 		// Catch error
-		console.error('Error:', err);
+		warn(err);
 		process.exit(1);
 	}
 

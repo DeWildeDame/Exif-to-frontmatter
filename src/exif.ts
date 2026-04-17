@@ -1,6 +1,9 @@
 import pkg from 'exifr';
 const { parse } = pkg;
 
+import { warn, error, success } from './cli/cliOutputParser.js';
+
+
 export interface ExifData {
 	make?: string;
 	model?: string;
@@ -22,8 +25,12 @@ export async function readExif(path: string): Promise<ExifData> {
 	const exif = await parse(path);
 
 	// No data. 
-	if (!exif) throw new Error(`No EXIF data found in ${path}`);
+	if (!exif) {
+		warn(`No EXIF data found in ${path}`);
+		return {}; // nothing to do
+	}
 
+	// Return EXIF Data. 
 	return {
 		make: exif.Make,
 		model: exif.Model,
@@ -38,4 +45,6 @@ export async function readExif(path: string): Promise<ExifData> {
 		longitude: exif.longitude,
 		createdDate: exif.DateTimeOriginal ?? exif.CreateDate
 	};
+
+
 }
