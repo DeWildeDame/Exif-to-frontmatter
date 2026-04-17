@@ -81,7 +81,9 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 	// Slug from title with respecting the overrides.
 	// This code is bad right now, move it to a new process to handle directory and slug handling.
 
-	const slug = flags.slug ? flags.slug + ++_slugCount : title.replace(/\s+/g, '-');
+	let slug = flags.slug ? flags.slug + ++_slugCount : title.replace(/\s+/g, '-');
+
+	slug = slug.toLowerCase();
 
 	// Build yaml, respect override from te flags.
 	const yaml = exifToFrontmatter(exif, { title: flags.title ? flags.title : title });
