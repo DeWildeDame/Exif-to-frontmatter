@@ -4,65 +4,11 @@ import path from 'node:path';
 import { ExifData, readExif } from './exif.js';
 import { exifToFrontmatter } from './frontmatter.js';
 import { directoryWalk } from './helpers/directorywalker.js';
+import parseArgs from './helpers/parseArgs.js';
+import processExif from './helpers/processExif.js';
 
 // Create tracker for slug override
 let _slugCount = 0;
-
-
-// Add support for arguments. 
-function parseArgs(argv: string[]) {
-	// Get args
-	const args: Record<string, string> = {};
-
-	// Create new override.
-	for (let i = 0; i < argv.length; i++) {
-		const arg = argv[i];
-		// only look for items leading with --
-		if (arg.startsWith("--")) {
-			const key = arg.slice(2);
-			const value = argv[i + 1] && !argv[i + 1].startsWith("--")
-				? argv[++i]
-				: "true";
-
-			args[key] = value;
-		}
-	}
-
-	return args;
-}
-
-
-async function processExif(exif: ExifData, flags: Record<string, any>) {
-	const exifData = exif as Record<string, any>;
-	for (const key in exif) {
-		if (!(key in flags)) continue;
-
-		const value = flags[key];
-
-		// numeric override (iso, fNumber, exposureBias, etc.)
-		if (!isNaN(Number(value))) {
-			exifData[key] = Number(value);
-			continue;
-		}
-
-		// fraction override (exposureTime: "1/6400")
-		if (/^\d+\/\d+$/.test(value)) {
-			const [num, den] = value.split("/").map(Number);
-			exifData[key] = num / den;
-			continue;
-		}
-
-		// location override (string array)
-		if (key === "location") {
-			exifData.location = [value];
-			continue;
-		}
-
-		// default: treat as string
-		exifData[key] = value;
-	}
-};
-
 
 // The props keep growing and growing. 
 async function processFile(file: string, inputRoot: string, outDir: string, flags: Record<string, any>) {
@@ -73,16 +19,15 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 	// Process overrides.
 	processExif(exif, flags);
 
-
 	// Title from filename
 	const base = path.basename(file);
 	const title = base.replace(path.extname(base), '');
 
 	// Slug from title with respecting the overrides.
 	// This code is bad right now, move it to a new process to handle directory and slug handling.
-
 	let slug = flags.slug ? flags.slug + ++_slugCount : title.replace(/\s+/g, '-');
 
+	// Normalize.
 	slug = slug.toLowerCase();
 
 	// Build yaml, respect override from te flags.
@@ -101,6 +46,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 	// Create the files!
 	const outPath = path.join(targetDir, `${slug}.mdx`);
 	fs.writeFileSync(outPath, mdx, 'utf8');
+
 	// We should get some monotoring in place at some point. 
 	console.info(`Created: ${outPath}`);
 

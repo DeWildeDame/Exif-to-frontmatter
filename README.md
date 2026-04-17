@@ -20,7 +20,7 @@ If no arguments are selected the directory ```'input'``` is assumed as the folde
 
 ## Overrides
 
-If you need to obfuscate or pre-populate. I will be using this primarily for photos taken on an film camera or when I have been using vintage lenses. 
+If you need to obfuscate or pre-populate. I will be using this primarily for photos taken on an film camera or when I have been using vintage lenses. You can aslo use it to introduce new YAML properties to your frontmatter. 
 
 ```--title "My custom title" --iso 800```
 
