@@ -1,12 +1,16 @@
 import sharp from "sharp";
 import path from "node:path";
+import fs from "node:fs/promises"
 
 export default async function processImages(
 	inputFile: string,
 	targetDir: string,
 	slug: string) {
 
-	// 
+	// Ensure the directory exists
+	await fs.mkdir(targetDir, { recursive: true });
+
+	// Set Base
 	const base = path.join(targetDir, slug);
 
 	// 1. Resize longest dimension to 1920

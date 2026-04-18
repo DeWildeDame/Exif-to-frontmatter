@@ -64,7 +64,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 			thumbnail: `${publicBase}-48x.jpg`
 		};
 
-		console.log(imagepaths.image)
+
 		flags.image = imagepaths.image;
 		flags.preview = imagepaths.preview;
 		flags.thumbnail = imagepaths.thumbnail;
@@ -72,7 +72,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		flags.title = title;
 		// Process overrides.
 		processExif(exif, flags);
-		console.log(imagepaths.image);
+
 		// Build yaml, respect override from te flags.
 		const yaml = exifToFrontmatter(exif, flags);
 
