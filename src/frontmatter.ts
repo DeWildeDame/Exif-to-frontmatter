@@ -1,5 +1,6 @@
 import { stringify } from 'yaml';
 import { ExifData } from './exif.js';
+import { thumbnail } from 'exifr';
 
 export function exifToFrontmatter(
 	exif: ExifData,
@@ -30,7 +31,11 @@ export function exifToFrontmatter(
 		lensModel: exif.lensModel,
 
 		location,
-		locationName: overrides.locationName
+		locationName: overrides.locationName,
+
+		image: overrides.image,
+		preview: overrides.preview,
+		thumbnail: overrides.preview
 	};
 
 	// Remove undefined fields
