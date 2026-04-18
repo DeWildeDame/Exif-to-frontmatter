@@ -16,7 +16,7 @@ node ./dist/cli.js <photo or folder>
 ```
 
 
-If no arguments are selected the directory ```'input'``` is assumed as the folder you want to process. Recursion in the input directory is safehuarded. 
+If no arguments are selected the directory ```'input'``` is assumed as the folder you want to process. Recursion in the input directory is safeguarded. 
 
 ## Overrides
 

@@ -107,7 +107,7 @@ async function main() {
 	let input = process.argv[2];
 
 	// Capture input path and replace if needed
-	if (typeof input === 'undefined')
+	if (typeof input === 'undefined' || input.startsWith('--'))
 		input = 'input';
 
 	const inputRoot = input;
