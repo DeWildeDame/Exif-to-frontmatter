@@ -56,8 +56,9 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		fs.mkdirSync(mdxRoot, { recursive: true });
 		fs.mkdirSync(imgRoot, { recursive: true });
 
-		// Set a new base for images
-		const publicBase = `/assets/img/photos/${rel}`;
+		// Set a new base for images, extension is removed because we will append it.
+		const publicBase = `/assets/img/photos/${rel.replace(/\.[a-z0-9]+$/i, "")}`;
+
 
 		const imagepaths = {
 			image: `${publicBase}.jpg`,
