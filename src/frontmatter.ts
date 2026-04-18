@@ -35,7 +35,7 @@ export function exifToFrontmatter(
 
 		image: overrides.image,
 		preview: overrides.preview,
-		thumbnail: overrides.preview
+		thumbnail: overrides.thumbnail
 	};
 
 	// Remove undefined fields

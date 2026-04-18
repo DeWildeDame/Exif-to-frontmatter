@@ -57,8 +57,13 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		fs.mkdirSync(imgRoot, { recursive: true });
 
 		// Set a new base for images, extension is removed because we will append it.
-		const publicBase = `/assets/img/photos/${rel.replace(/\.[a-z0-9]+$/i, "")}`;
-
+		// Replace spaces with dashes.
+		// Clean this up also......
+		const publicBase = (
+			`/assets/img/photos/${rel.replace(/\.[a-z0-9]+$/i, "")}`
+		)
+			.toLowerCase()
+			.replace(/\s+/g, '-');
 
 		const imagepaths = {
 			image: `${publicBase}.jpg`,
