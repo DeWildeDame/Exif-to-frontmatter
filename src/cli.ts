@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { mkdir } from "node:fs/promises";
 import { ExifData, readExif } from './exif.js';
 import { exifToFrontmatter } from './frontmatter.js';
 import { directoryWalk } from './helpers/directorywalker.js';
@@ -105,6 +106,9 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 
 
 async function main() {
+
+	// Make sure there is a place to write logs too
+	await mkdir("logs", { recursive: true });
 
 	// Process input arguments
 	const args = process.argv.slice(2);
