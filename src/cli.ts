@@ -84,7 +84,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		const yaml = exifToFrontmatter(exif, flags);
 
 		// Create MDX.
-		const mdx = `---\n${yaml.trim()}\n---\n\n`;
+		const mdx = `---\n${yaml.trim()}\n---\n\n\n\n![${title}](${imagepaths.image})`;
 
 		// Create target directory
 		const targetDirMdx = path.join(mdxRoot, relDir);
