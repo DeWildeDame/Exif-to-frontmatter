@@ -106,14 +106,13 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 
 async function main() {
 
-	// Process input
-	let input = process.argv[2];
-
-	// Capture input path and replace if needed
-	if (typeof input === 'undefined' || input.startsWith('--'))
-		input = 'input';
-
-	const inputRoot = input;
+	// Process input arguments
+	const args = process.argv.slice(2);
+	const maybePath = args[0]
+	// Check if the argument is a path
+	const hasPath = maybePath && !maybePath.startsWith("--");
+	// Set Input path id missing
+	const inputRoot = hasPath ? maybePath : './input';
 
 	// Capture arguments
 	const flags = parseArgs(process.argv.slice(3));
@@ -137,13 +136,13 @@ async function main() {
 
 
 		// What kind of input are we handling.
-		const stat = fs.statSync(input);
+		const stat = fs.statSync(inputRoot);
 
 		// Directory logic.
 		if (stat.isDirectory()) {
 
 			// Let's do some recursion!
-			for (const file of directoryWalk(input)) {
+			for (const file of directoryWalk(inputRoot)) {
 
 				// Only process img files. 
 				if (/\.(jpg|jpeg|png|tif|tiff|dng)$/i.test(file)) {
@@ -152,7 +151,7 @@ async function main() {
 			}
 		} else {
 			// Process file.
-			await processFile(input, inputRoot, outDir, flags);
+			await processFile(inputRoot, inputRoot, outDir, flags);
 		}
 
 	} catch (err: any) {
