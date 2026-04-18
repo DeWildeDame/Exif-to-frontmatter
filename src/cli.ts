@@ -44,13 +44,6 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		// Normalize.
 		slug = slug.toLowerCase();
 
-		// Set a new base for images
-		const publicBase = `/assets/img/photos/${path}/${slug}`;
-		const imagepaths = {
-			image: `${publicBase}.jpg`,
-			preview: `${publicBase}-preview.jpg`,
-			thumbnail: `${publicBase}-48x.jpg`
-		}
 
 		const rel = path.relative(inputRoot, file);
 		const relDir = path.dirname(rel);
@@ -62,6 +55,16 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		fs.mkdirSync(mdxRoot, { recursive: true });
 		fs.mkdirSync(imgRoot, { recursive: true });
 
+		// Set a new base for images
+		const publicBase = `/assets/img/photos/${rel}`;
+
+		const imagepaths = {
+			image: `${publicBase}.jpg`,
+			preview: `${publicBase}-preview.jpg`,
+			thumbnail: `${publicBase}-48x.jpg`
+		};
+
+		console.log(imagepaths.image)
 		flags.image = imagepaths.image;
 		flags.preview = imagepaths.preview;
 		flags.thumbnail = imagepaths.thumbnail;
@@ -69,7 +72,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 		flags.title = title;
 		// Process overrides.
 		processExif(exif, flags);
-
+		console.log(imagepaths.image);
 		// Build yaml, respect override from te flags.
 		const yaml = exifToFrontmatter(exif, flags);
 
