@@ -115,7 +115,7 @@ async function main() {
 	const inputRoot = hasPath ? maybePath : './input';
 
 	// Capture arguments
-	const flags = parseArgs(process.argv.slice(3));
+	const flags = parseArgs(hasPath ? args.slice(1) : args);
 
 
 
