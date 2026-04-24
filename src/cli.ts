@@ -63,6 +63,7 @@ async function processFile(file: string, inputRoot: string, outDir: string, flag
 			`/assets/img/photos/${rel.replace(/\.[a-z0-9]+$/i, "")}`
 		)
 			.toLowerCase()
+			.replace(/\\/g, "/")
 			.replace(/\s+/g, '-');
 
 		const imagepaths = {
